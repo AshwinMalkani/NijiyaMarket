@@ -5,9 +5,10 @@ import { useRouter } from "../lib/router";
 import {
   BackHeader,
   Button,
+  Lightbox,
   RowSkeleton,
   ScoreBadge,
-  Thumb,
+  ZoomablePhoto,
   joinNames,
   timeAgo,
 } from "../components/ui";
@@ -65,6 +66,7 @@ export function Item({ itemId }: { itemId: number }) {
   const { navigate } = useRouter();
   const [detail, setDetail] = useState<ItemDetail | null>(null);
   const [missing, setMissing] = useState(false);
+  const [zoom, setZoom] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -101,12 +103,19 @@ export function Item({ itemId }: { itemId: number }) {
       <BackHeader title={item.name} action={<ShareButton itemName={item.name} />} />
 
       <div className="px-4 pt-4">
-        {hero && (
-          <img
-            src={hero}
-            alt={item.name}
-            className="max-h-72 w-full rounded-2xl border border-[var(--color-line)] object-cover"
-          />
+        {hero && item.photo_key && (
+          <button
+            type="button"
+            onClick={() => setZoom(hero)}
+            className="block w-full"
+            aria-label="View photo"
+          >
+            <img
+              src={hero}
+              alt={item.name}
+              className="max-h-72 w-full rounded-2xl border border-[var(--color-line)] object-cover"
+            />
+          </button>
         )}
 
         <div className={`flex items-start gap-3 ${hero ? "mt-4" : ""}`}>
@@ -179,10 +188,10 @@ export function Item({ itemId }: { itemId: number }) {
                     {rating.photos.length > 0 && (
                       <div className="mt-2 flex gap-2">
                         {rating.photos.map((key) => (
-                          <Thumb
+                          <ZoomablePhoto
                             key={key}
                             photoKey={key}
-                            alt=""
+                            alt={`Photo of ${item.name}`}
                             className="h-20 w-20"
                             emoji={item.section_emoji}
                           />
@@ -196,6 +205,8 @@ export function Item({ itemId }: { itemId: number }) {
           </ul>
         )}
       </section>
+
+      {zoom && <Lightbox src={zoom} alt={item.name} onClose={() => setZoom(null)} />}
     </div>
   );
 }

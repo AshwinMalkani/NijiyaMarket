@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { photoUrl } from "../lib/api";
 import { useRouter } from "../lib/router";
 
@@ -59,6 +59,80 @@ export function Thumb({
       ) : (
         <span className="text-xl opacity-40">{emoji}</span>
       )}
+    </div>
+  );
+}
+
+/**
+ * A photo thumbnail (cropped square) that opens the full, uncropped image
+ * full-screen when tapped — so the tidy grid doesn't hide what was shot.
+ */
+export function ZoomablePhoto({
+  photoKey,
+  alt,
+  className = "h-20 w-20",
+  emoji,
+}: {
+  photoKey: string;
+  alt: string;
+  className?: string;
+  emoji?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const src = photoUrl(photoKey);
+  if (!src) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="View photo"
+        className="shrink-0"
+      >
+        <Thumb photoKey={photoKey} alt={alt} className={className} emoji={emoji} />
+      </button>
+      {open && <Lightbox src={src} alt={alt} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+export function Lightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-2xl text-white"
+      >
+        ×
+      </button>
+      {/* Tap anywhere — including the photo — to dismiss. */}
+      <img src={src} alt={alt} className="max-h-full max-w-full rounded-xl object-contain" />
     </div>
   );
 }
