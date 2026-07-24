@@ -6,6 +6,7 @@ import { PhotoPicker } from "../components/PhotoPicker";
 import {
   BackHeader,
   Button,
+  Chip,
   ErrorNote,
   Field,
   ScoreBadge,
@@ -96,9 +97,17 @@ export function Add() {
         <button
           onClick={() => setScanning(true)}
           disabled={lookingUp}
-          className="flex min-h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-[var(--color-brand)] text-lg font-semibold text-white active:bg-[var(--color-brand-dark)] disabled:opacity-60"
+          className="flex min-h-[72px] w-full items-center justify-center gap-3 rounded-2xl bg-[var(--color-brand)] text-lg font-bold text-white shadow-[0_4px_14px_rgba(192,57,43,0.3)] active:bg-[var(--color-brand-dark)] disabled:opacity-60 disabled:shadow-none"
         >
-          {lookingUp ? "Looking it up…" : "📷 Scan the barcode"}
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M3 8V5.5A1.5 1.5 0 0 1 4.5 4H8M16 4h3.5A1.5 1.5 0 0 1 21 5.5V8M21 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H4.5A1.5 1.5 0 0 1 3 18.5V16M7 9v6M10.5 9v6M13.5 9v6M17 9v6"
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+            />
+          </svg>
+          {lookingUp ? "Looking it up…" : "Scan the barcode"}
         </button>
 
         <ErrorNote>{error}</ErrorNote>
@@ -118,7 +127,7 @@ export function Add() {
         />
 
         {matches.length > 0 && (
-          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-2xl border border-[var(--color-line)] bg-white">
+          <ul className="divide-y divide-[var(--color-line)] overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)]">
             {matches.map((item) => (
               <li key={item.id}>
                 <button
@@ -267,27 +276,23 @@ function NewItemForm({
         </Field>
 
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-[var(--color-muted)]">Section</span>
+          <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-[var(--color-muted)]">Section</span>
           <div className="flex flex-wrap gap-2">
             {sections.map((section) => (
-              <button
+              <Chip
                 key={section.id}
-                type="button"
+                selected={sectionId === section.id}
                 onClick={() => setSectionId(section.id)}
-                className={`min-h-[44px] rounded-full px-4 text-sm font-medium ${
-                  sectionId === section.id
-                    ? "bg-[var(--color-brand)] text-white"
-                    : "border border-[var(--color-line)] bg-white text-[var(--color-muted)]"
-                }`}
+                className="min-h-[44px]"
               >
                 {section.emoji} {section.name}
-              </button>
+              </Chip>
             ))}
             {!newSection && (
               <button
                 type="button"
                 onClick={() => setNewSection(true)}
-                className="min-h-[44px] rounded-full border border-dashed border-[var(--color-line)] bg-white px-4 text-sm font-medium text-[var(--color-muted)]"
+                className="min-h-[44px] rounded-full border border-dashed border-[var(--color-line)] bg-[var(--color-card)] px-4 text-sm font-semibold text-[var(--color-muted)]"
               >
                 + New
               </button>

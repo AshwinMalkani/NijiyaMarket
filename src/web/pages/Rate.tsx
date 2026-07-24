@@ -96,14 +96,33 @@ export function Rate({ itemId }: { itemId: number }) {
           </div>
         )}
 
-        <div className="rounded-2xl border border-[var(--color-line)] bg-white p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--color-muted)]">Your score</span>
+        <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-5 shadow-[0_1px_2px_rgba(33,28,23,0.04)]">
+          <p className="text-center text-[13px] font-semibold tracking-wide text-[var(--color-muted)]">
+            Your score
+          </p>
+
+          <div className="mt-2 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              aria-label="Score down"
+              onClick={() => setScore((s) => Math.max(0, Math.round((s - 0.1) * 10) / 10))}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-line)] bg-white text-xl font-bold text-[var(--color-muted)] active:bg-[var(--color-line)]/50"
+            >
+              −
+            </button>
             <span
-              className={`flex h-16 w-20 items-center justify-center rounded-2xl text-3xl font-bold tabular-nums text-white ${scoreColor(score)}`}
+              className={`flex h-24 w-32 items-center justify-center rounded-3xl text-5xl font-extrabold tabular-nums text-white shadow-md ${scoreColor(score)}`}
             >
               {formatScore(score)}
             </span>
+            <button
+              type="button"
+              aria-label="Score up"
+              onClick={() => setScore((s) => Math.min(10, Math.round((s + 0.1) * 10) / 10))}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-line)] bg-white text-xl font-bold text-[var(--color-muted)] active:bg-[var(--color-line)]/50"
+            >
+              +
+            </button>
           </div>
 
           <input
@@ -113,30 +132,13 @@ export function Rate({ itemId }: { itemId: number }) {
             step={0.1}
             value={score}
             onChange={(e) => setScore(Number(e.target.value))}
-            className="mt-4 w-full accent-[var(--color-brand)]"
+            className="mt-4 w-full"
             aria-label="Score"
           />
 
           <div className="mt-1 flex justify-between text-xs text-[var(--color-muted)]">
             <span>0 · never again</span>
             <span>10 · buy every time</span>
-          </div>
-
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setScore((s) => Math.max(0, Math.round((s - 0.1) * 10) / 10))}
-              className="min-h-[44px] flex-1 rounded-xl border border-[var(--color-line)] text-lg"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onClick={() => setScore((s) => Math.min(10, Math.round((s + 0.1) * 10) / 10))}
-              className="min-h-[44px] flex-1 rounded-xl border border-[var(--color-line)] text-lg"
-            >
-              +
-            </button>
           </div>
         </div>
 

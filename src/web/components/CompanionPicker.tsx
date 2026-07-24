@@ -75,7 +75,7 @@ export function CompanionPicker({
 
   return (
     <div>
-      <span className="mb-1.5 block text-sm font-medium text-[var(--color-muted)]">
+      <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-[var(--color-muted)]">
         Tried it with
       </span>
 
@@ -87,10 +87,10 @@ export function CompanionPicker({
               key={person.id}
               type="button"
               onClick={() => toggle(person.id)}
-              className={`min-h-[40px] rounded-full px-3.5 text-sm font-medium ${
+              className={`min-h-[40px] rounded-full px-3.5 text-sm font-semibold transition-colors ${
                 selected
-                  ? "bg-[var(--color-brand)] text-white"
-                  : "border border-[var(--color-line)] bg-white text-[var(--color-muted)]"
+                  ? "bg-[var(--color-ink)] text-[var(--color-paper)]"
+                  : "border border-[var(--color-line)] bg-[var(--color-card)] text-[var(--color-muted)]"
               }`}
             >
               {person.name}
@@ -105,7 +105,7 @@ export function CompanionPicker({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="min-h-[40px] rounded-full border border-dashed border-[var(--color-line)] bg-white px-3.5 text-sm font-medium text-[var(--color-muted)]"
+            className="min-h-[40px] rounded-full border border-dashed border-[var(--color-line)] bg-[var(--color-card)] px-3.5 text-sm font-semibold text-[var(--color-muted)]"
           >
             + Someone new
           </button>
@@ -118,7 +118,7 @@ export function CompanionPicker({
         silently navigated away instead of adding the person.
       */}
       {adding && (
-        <div className="mt-3 space-y-2 rounded-xl bg-white p-3 ring-1 ring-[var(--color-line)]">
+        <div className="mt-3 space-y-2 rounded-xl bg-[var(--color-card)] p-3 ring-1 ring-[var(--color-line)]">
           <p className="text-xs text-[var(--color-muted)]">
             They don't need an account yet — when they sign up with this number, everything
             you've tagged them in will be waiting.

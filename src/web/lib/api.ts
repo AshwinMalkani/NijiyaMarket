@@ -105,7 +105,10 @@ const post = <T>(path: string, body?: unknown) =>
 export const api = {
   me: () => request<{ user: User }>("/me"),
   checkPhone: (phone: string) =>
-    post<{ exists: boolean; name: string | null; phone: string }>("/auth/check-phone", { phone }),
+    post<{ exists: boolean; name: string | null; invitedBy: string | null; phone: string }>(
+      "/auth/check-phone",
+      { phone },
+    ),
   signup: (input: { phone: string; name: string; pin: string; inviteCode: string }) =>
     post<{ user: User }>("/auth/signup", input),
   login: (input: { phone: string; pin: string }) => post<{ user: User }>("/auth/login", input),

@@ -26,12 +26,17 @@ export function Login({ onSignedIn }: { onSignedIn: (user: User) => void }) {
     }
   }
 
+  const [invitedBy, setInvitedBy] = useState<string | null>(null);
+
   const submitPhone = (e: React.FormEvent) => {
     e.preventDefault();
     run(async () => {
       const res = await api.checkPhone(phone);
       setPhone(res.phone);
       setKnownName(res.name);
+      setInvitedBy(res.invitedBy ?? null);
+      // A friend may have tagged this number already — prefill the name they used.
+      if (!res.exists && res.name) setName(res.name);
       setStep(res.exists ? "login" : "signup");
     });
   };
@@ -61,15 +66,21 @@ export function Login({ onSignedIn }: { onSignedIn: (user: User) => void }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col justify-center px-6 py-12">
       <div className="mb-8 text-center">
-        <div className="text-5xl">🍙</div>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">Nijiya Rankings</h1>
+        <img
+          src="/icon.svg"
+          alt=""
+          className="mx-auto h-16 w-16 rounded-2xl shadow-[0_4px_14px_rgba(192,57,43,0.35)]"
+        />
+        <h1 className="mt-4 text-[32px] font-extrabold tracking-tight">
+          Nijiya Rankings<span className="text-[var(--color-brand)]">.</span>
+        </h1>
         <p className="mt-1 text-[var(--color-muted)]">
           Everything from the market, ranked by us.
         </p>
       </div>
 
       {step === "phone" && (
-        <form onSubmit={submitPhone} className="space-y-4">
+        <form onSubmit={submitPhone} className="space-y-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-5 shadow-[0_1px_2px_rgba(33,28,23,0.04)]">
           <Field label="Phone number" hint="We use this as your login — no texts, we promise.">
             <input
               className={inputClass}
@@ -88,7 +99,7 @@ export function Login({ onSignedIn }: { onSignedIn: (user: User) => void }) {
       )}
 
       {step === "login" && (
-        <form onSubmit={submitLogin} className="space-y-4">
+        <form onSubmit={submitLogin} className="space-y-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-5 shadow-[0_1px_2px_rgba(33,28,23,0.04)]">
           <p className="text-center">
             Welcome back{knownName ? `, ${knownName}` : ""}.
           </p>
@@ -114,9 +125,11 @@ export function Login({ onSignedIn }: { onSignedIn: (user: User) => void }) {
       )}
 
       {step === "signup" && (
-        <form onSubmit={submitSignup} className="space-y-4">
+        <form onSubmit={submitSignup} className="space-y-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] p-5 shadow-[0_1px_2px_rgba(33,28,23,0.04)]">
           <p className="text-center text-sm text-[var(--color-muted)]">
-            New here — let's make you an account.
+            {invitedBy
+              ? `${invitedBy} has been tagging you in ratings — claim your account and see them.`
+              : "New here — let's make you an account."}
           </p>
           <Field label="Your name">
             <input

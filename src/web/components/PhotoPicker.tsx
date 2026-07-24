@@ -35,7 +35,7 @@ export function PhotoPicker({
 
   return (
     <div>
-      <span className="mb-1.5 block text-sm font-medium text-[var(--color-muted)]">{label}</span>
+      <span className="mb-1.5 block text-[13px] font-semibold tracking-wide text-[var(--color-muted)]">{label}</span>
 
       {preview ? (
         <div className="relative overflow-hidden rounded-xl border border-[var(--color-line)]">
@@ -53,7 +53,7 @@ export function PhotoPicker({
           type="button"
           disabled={busy}
           onClick={() => fileRef.current?.click()}
-          className="min-h-[48px] w-full rounded-xl border border-dashed border-[var(--color-line)] bg-white px-3 text-sm font-medium text-[var(--color-muted)] active:bg-stone-50"
+          className="min-h-[48px] w-full rounded-xl border border-dashed border-[var(--color-line)] bg-[var(--color-card)] px-3 text-sm font-semibold text-[var(--color-muted)] active:bg-stone-50"
         >
           {busy ? "Uploading…" : "📷 Take or choose a photo"}
         </button>

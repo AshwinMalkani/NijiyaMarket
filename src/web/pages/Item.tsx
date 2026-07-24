@@ -52,13 +52,19 @@ export function Item({ itemId }: { itemId: number }) {
     <div className="mx-auto min-h-dvh w-full max-w-[520px] pb-28">
       <BackHeader title={item.name} />
 
-      {hero && <img src={hero} alt={item.name} className="max-h-72 w-full object-cover" />}
-
       <div className="px-4 pt-4">
-        <div className="flex items-start gap-3">
+        {hero && (
+          <img
+            src={hero}
+            alt={item.name}
+            className="max-h-72 w-full rounded-2xl border border-[var(--color-line)] object-cover"
+          />
+        )}
+
+        <div className={`flex items-start gap-3 ${hero ? "mt-4" : ""}`}>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold">{item.name}</h1>
-            <p className="mt-0.5 text-sm text-[var(--color-muted)]">
+            <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{item.name}</h1>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">
               {item.section_emoji} {item.section_name}
               {item.price_cents !== null && <> · ${(item.price_cents / 100).toFixed(2)}</>}
             </p>
@@ -70,7 +76,7 @@ export function Item({ itemId }: { itemId: number }) {
           </div>
           <div className="text-center">
             <ScoreBadge score={item.avg_score} size="lg" />
-            <p className="mt-1 text-[11px] text-[var(--color-muted)]">average</p>
+            <p className="mt-1 text-[11px] font-semibold text-[var(--color-muted)]">average</p>
           </div>
         </div>
 
@@ -82,7 +88,7 @@ export function Item({ itemId }: { itemId: number }) {
       </div>
 
       <section className="mt-6">
-        <h2 className="px-4 pb-2 text-sm font-semibold text-[var(--color-muted)]">
+        <h2 className="px-4 pb-2 text-[13px] font-semibold tracking-wide text-[var(--color-muted)]">
           What everyone said
         </h2>
 
@@ -91,16 +97,19 @@ export function Item({ itemId }: { itemId: number }) {
             Be the first to rate it.
           </p>
         ) : (
-          <ul className="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)] bg-white">
+          <ul className="space-y-2 px-4">
             {ratings.map((rating) => (
-              <li key={rating.id} className="px-4 py-3">
+              <li
+                key={rating.id}
+                className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-card)] px-3.5 py-3 shadow-[0_1px_2px_rgba(33,28,23,0.04)]"
+              >
                 <div className="flex items-start gap-3">
                   <ScoreBadge score={rating.score} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm">
                       <button
                         onClick={() => navigate(`/user/${rating.user_id}`)}
-                        className="font-semibold underline-offset-2 hover:underline"
+                        className="font-bold underline-offset-2 hover:underline"
                       >
                         {rating.user_id === user.id ? "You" : rating.user_name}
                       </button>
@@ -114,7 +123,11 @@ export function Item({ itemId }: { itemId: number }) {
                         with {joinNames(rating.companions.map((c) => c.name))}
                       </p>
                     )}
-                    {rating.notes && <p className="mt-1 text-sm">“{rating.notes}”</p>}
+                    {rating.notes && (
+                      <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink)]/85">
+                        “{rating.notes}”
+                      </p>
+                    )}
                     {rating.photos.length > 0 && (
                       <div className="mt-2 flex gap-2">
                         {rating.photos.map((key) => (
