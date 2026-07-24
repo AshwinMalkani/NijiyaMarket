@@ -12,6 +12,54 @@ import {
   timeAgo,
 } from "../components/ui";
 
+/** Share via the native sheet where it exists (iOS/Android), else copy the link. */
+function ShareButton({ itemName }: { itemName: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function share() {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `${itemName} — Nijiya Rankings`, url });
+        return;
+      } catch (err) {
+        // AbortError = the user closed the sheet; anything else means share
+        // isn't actually usable here, so fall through to copying instead.
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked; nothing sensible to do */
+    }
+  }
+
+  return (
+    <button
+      onClick={share}
+      aria-label="Share this item"
+      className="flex h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-[var(--color-muted)] active:bg-[var(--color-line)]"
+    >
+      {copied ? (
+        "Copied!"
+      ) : (
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M12 3v12M12 3L8 7m4-4l4 4M5 13v6a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export function Item({ itemId }: { itemId: number }) {
   const { user } = useAuth();
   const { navigate } = useRouter();
@@ -50,7 +98,7 @@ export function Item({ itemId }: { itemId: number }) {
 
   return (
     <div className="mx-auto min-h-dvh w-full max-w-[520px] pb-28">
-      <BackHeader title={item.name} />
+      <BackHeader title={item.name} action={<ShareButton itemName={item.name} />} />
 
       <div className="px-4 pt-4">
         {hero && (
