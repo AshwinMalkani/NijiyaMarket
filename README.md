@@ -12,10 +12,16 @@ decisions made while building it.
 - **Scan a barcode** to add something. If someone already scanned that product you land on their
   item instead of creating a duplicate; otherwise we try Open Food Facts for the name and photo,
   and fall back to typing it in.
-- **Rate 0–10** with notes, a photo, and who you tried it with.
+- **Rate 0–10** on a big score dial with notes, a photo, and who you tried it with.
 - **Tagging a friend never scores the item for them.** It nudges them to rate it themselves, so
   averages only ever contain scores people actually gave. You can tag friends who haven't signed
-  up yet — they inherit every tag waiting for them when they join with that phone number.
+  up yet — they inherit every tag waiting for them when they join with that phone number, and the
+  login screen greets them with who's been tagging them.
+- **Browse the rankings** by section, ranked by our average score, with medal colors for the top
+  three and a search box.
+- **Share any item** with the button on its page — the native share sheet on a phone, copy-link
+  everywhere else. The link deep-links straight to that item; a signed-out friend hits login first
+  and lands on the item afterward.
 
 ## Development
 
