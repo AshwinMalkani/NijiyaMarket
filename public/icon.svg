@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nijiya">
+  <rect width="512" height="512" rx="112" fill="#c8443c" />
+  <path d="M256 104c-14 0-26 8-32 20l-84 168c-6 12-5 25 2 36s19 16 32 16h164c13 0 25-6 32-16s8-24 2-36l-84-168c-6-12-18-20-32-20z" fill="#faf7f2" />
+  <rect x="196" y="288" width="120" height="56" rx="12" fill="#1c1917" />
+</svg>

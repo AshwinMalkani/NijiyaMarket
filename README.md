@@ -1,0 +1,60 @@
+# Nijiya Rankings
+
+A mobile-first app for rating and ranking everything at Nijiya Market with friends.
+
+Live at **https://nijiya.ashwinmalkani.dev** — see [PLAN.md](PLAN.md) for the full spec and the
+decisions made while building it.
+
+## How it works
+
+- **Accounts are phone numbers.** Sign up with your number, a 4–6 digit PIN, and the shared invite
+  code. No SMS — the invite code is what keeps strangers out.
+- **Scan a barcode** to add something. If someone already scanned that product you land on their
+  item instead of creating a duplicate; otherwise we try Open Food Facts for the name and photo,
+  and fall back to typing it in.
+- **Rate 0–10** with notes, a photo, and who you tried it with.
+- **Tagging a friend never scores the item for them.** It nudges them to rate it themselves, so
+  averages only ever contain scores people actually gave. You can tag friends who haven't signed
+  up yet — they inherit every tag waiting for them when they join with that phone number.
+
+## Development
+
+```sh
+npm install
+npx wrangler d1 migrations apply nijiya-market --local   # first time only
+npm run dev                                              # builds, then serves on :8787
+```
+
+`npm run dev` passes no invite code, so signup is open locally. To exercise the gate, run
+`npx wrangler dev --var INVITE_CODE:nijiya` instead.
+
+### Tests
+
+```sh
+bash scripts/api-check.sh    # API happy path incl. invite → claim → nudge flow
+npm run smoke                # drives the real UI in Chrome at an iPhone viewport
+```
+
+Both expect a dev server on `:8787`. Point either at production with
+`BASE=https://nijiya.ashwinmalkani.dev`.
+
+### Deploy
+
+```sh
+npm run deploy               # builds and pushes the Worker
+```
+
+Migrations run separately: `npx wrangler d1 migrations apply nijiya-market --remote`.
+
+## Infrastructure
+
+One Cloudflare Worker (Hono) serves both the API and the React SPA.
+
+| Resource | Name |
+| --- | --- |
+| Worker | `nijiya-market` |
+| D1 database | `nijiya-market` |
+| R2 bucket | `nijiya-photos` (photos, served via `/img/<key>`) |
+| Secret | `INVITE_CODE` — required to sign up |
+
+To change the invite code: `npx wrangler secret put INVITE_CODE`.

@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nijiya-market",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "dist/web",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/img/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nijiya-market",
+      "database_id": "21cadd4e-5a10-443d-9a11-35be47b8f3c8",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PHOTOS",
+      "bucket_name": "nijiya-photos"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "nijiya.ashwinmalkani.dev",
+      "custom_domain": true
+    }
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true
+  }
+}
