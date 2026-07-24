@@ -3,19 +3,35 @@
 set -euo pipefail
 
 BASE="${BASE:-http://localhost:8787}"
+
+# This script signs up users and creates items; keep it away from real data.
+case "$BASE" in
+  *nijiya.ashwinmalkani.dev*)
+    if [ "${ALLOW_PROD:-}" != "1" ]; then
+      echo "Refusing to run against production ($BASE) — it would pollute the real database."
+      echo "Run against a local dev server, or set ALLOW_PROD=1 if you really mean it."
+      exit 1
+    fi
+    ;;
+esac
 TMP=$(mktemp -d)
 A="$TMP/ashwin.jar"
 S="$TMP/sahil.jar"
+
+# Fresh numbers each run so the script is re-runnable against a dirty dev DB.
+PHONE_A="555$(printf '%07d' $((RANDOM * RANDOM % 10000000)))"
+PHONE_S="555$(printf '%07d' $((RANDOM * RANDOM % 10000000)))"
+BARCODE="49$(printf '%011d' $((RANDOM * RANDOM % 100000000000)))"
 j() { printf '%s' "$1" | python3 -c 'import json,sys; print(json.load(sys.stdin)['"$2"'])'; }
 
 echo "== signup Ashwin =="
 OUT=$(curl -s -c "$A" -X POST "$BASE/api/auth/signup" -H 'content-type: application/json' \
-  -d '{"phone":"5551230001","name":"Ashwin","pin":"1234","inviteCode":"nijiya"}')
+  -d "{\"phone\":\"$PHONE_A\",\"name\":\"Ashwin\",\"pin\":\"1234\",\"inviteCode\":\"nijiya\"}")
 echo "$OUT"
 
 echo "== invite Sahil (no account yet) =="
 OUT=$(curl -s -b "$A" -X POST "$BASE/api/users/invite" -H 'content-type: application/json' \
-  -d '{"name":"Sahil","phone":"5551230002"}')
+  -d "{\"name\":\"Sahil\",\"phone\":\"$PHONE_S\"}")
 echo "$OUT"
 SAHIL_ID=$(j "$OUT" '"user"]["id"')
 
@@ -26,7 +42,7 @@ SECTION_ID=$(j "$SECTIONS" '"sections"][0]["id"')
 
 echo "== create item with barcode =="
 OUT=$(curl -s -b "$A" -X POST "$BASE/api/items" -H 'content-type: application/json' \
-  -d "{\"name\":\"Strong Zero Lemon\",\"sectionId\":$SECTION_ID,\"priceCents\":399,\"barcode\":\"4901777289017\"}")
+  -d "{\"name\":\"Strong Zero Lemon\",\"sectionId\":$SECTION_ID,\"priceCents\":399,\"barcode\":\"$BARCODE\"}")
 echo "$OUT"
 ITEM_ID=$(j "$OUT" '"id"')
 
@@ -36,7 +52,7 @@ curl -s -b "$A" -X PUT "$BASE/api/ratings/$ITEM_ID" -H 'content-type: applicatio
 echo
 
 echo "== barcode rescan should match the existing item =="
-curl -s -b "$A" "$BASE/api/barcode/4901777289017" | head -c 300
+curl -s -b "$A" "$BASE/api/barcode/$BARCODE" | head -c 300
 echo
 
 echo "== feed =="
@@ -45,7 +61,7 @@ echo
 
 echo "== Sahil claims his invite by signing up =="
 OUT=$(curl -s -c "$S" -X POST "$BASE/api/auth/signup" -H 'content-type: application/json' \
-  -d '{"phone":"5551230002","name":"Sahil","pin":"4321","inviteCode":"nijiya"}')
+  -d "{\"phone\":\"$PHONE_S\",\"name\":\"Sahil\",\"pin\":\"4321\",\"inviteCode\":\"nijiya\"}")
 echo "$OUT"
 CLAIMED_ID=$(j "$OUT" '"user"]["id"')
 if [ "$CLAIMED_ID" != "$SAHIL_ID" ]; then
@@ -76,12 +92,14 @@ echo
 
 echo "== wrong PIN is rejected =="
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "$BASE/api/auth/login" \
-  -H 'content-type: application/json' -d '{"phone":"5551230001","pin":"9999"}'
+  -H 'content-type: application/json' -d "{\"phone\":\"$PHONE_A\",\"pin\":\"9999\"}"
 
-echo "== bad invite code is rejected =="
+# Expect 403 only when INVITE_CODE is configured; a bare `wrangler dev` leaves
+# signup open, in which case 200 here is correct.
+echo "== bad invite code (403 if INVITE_CODE is set, else 200) =="
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "$BASE/api/auth/signup" \
   -H 'content-type: application/json' \
-  -d '{"phone":"5559999999","name":"Rando","pin":"1111","inviteCode":"wrong"}'
+  -d "{\"phone\":\"555$(printf '%07d' $((RANDOM * RANDOM % 10000000)))\",\"name\":\"Rando\",\"pin\":\"1111\",\"inviteCode\":\"wrong\"}"
 
 rm -rf "$TMP"
 echo

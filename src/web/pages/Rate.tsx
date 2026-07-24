@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type ItemDetail } from "../lib/api";
 import { useRouter } from "../lib/router";
-import { CompanionPicker } from "../components/CompanionPicker";
+import { CompanionPicker, type FlushInvite } from "../components/CompanionPicker";
 import { PhotoPicker } from "../components/PhotoPicker";
 import {
   BackHeader,
@@ -43,16 +43,26 @@ export function Rate({ itemId }: { itemId: number }) {
       .catch((err) => setError(err instanceof Error ? err.message : "Couldn't load that item"));
   }, [itemId]);
 
+  const flushInvite = useRef<FlushInvite | null>(null);
+  const registerFlush = useCallback((flush: FlushInvite) => {
+    flushInvite.current = flush;
+  }, []);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
     try {
+      // Pick up anyone typed into "someone new" but not explicitly added.
+      let ids = companionIds;
+      const addedId = await flushInvite.current?.();
+      if (addedId && !ids.includes(addedId)) ids = [...ids, addedId];
+
       await api.saveRating(itemId, {
         score,
         notes,
         triedOn,
-        companionIds,
+        companionIds: ids,
         photoKeys: photoKey ? [photoKey] : [],
       });
       navigate(`/item/${itemId}`, { replace: true });
@@ -139,7 +149,11 @@ export function Rate({ itemId }: { itemId: number }) {
           />
         </Field>
 
-        <CompanionPicker value={companionIds} onChange={setCompanionIds} />
+        <CompanionPicker
+          value={companionIds}
+          onChange={setCompanionIds}
+          registerFlush={registerFlush}
+        />
 
         <PhotoPicker photoKey={photoKey} onChange={setPhotoKey} label="Add a photo (optional)" />
 

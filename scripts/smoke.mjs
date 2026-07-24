@@ -1,11 +1,14 @@
 // Drives the real UI in Chrome at an iPhone-ish viewport: sign up, add an item
 // by hand, rate it, and confirm it shows up in the rankings.
 import puppeteer from "puppeteer-core";
+import { refuseProduction } from "./guard.mjs";
 
 const BASE = process.env.BASE ?? "http://localhost:8787";
 const PHONE = process.env.PHONE ?? `555${Math.floor(1000000 + Math.random() * 8999999)}`;
 const INVITE = process.env.INVITE_CODE ?? "nijiya";
 const ITEM = `Smoke Mochi ${Date.now().toString().slice(-5)}`;
+
+refuseProduction(BASE);
 
 const browser = await puppeteer.launch({
   executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",

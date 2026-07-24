@@ -31,12 +31,20 @@ npm run dev                                              # builds, then serves o
 ### Tests
 
 ```sh
-bash scripts/api-check.sh    # API happy path incl. invite → claim → nudge flow
-npm run smoke                # drives the real UI in Chrome at an iPhone viewport
+bash scripts/api-check.sh          # API happy path incl. invite → claim → nudge flow
+npm run smoke                      # drives the real UI in Chrome at an iPhone viewport
+node scripts/companion-check.mjs   # tagging a companion who has no account yet
 ```
 
-Both expect a dev server on `:8787`. Point either at production with
-`BASE=https://nijiya.ashwinmalkani.dev`.
+All three expect a dev server on `:8787`. They sign up users and create items, so
+they **refuse to run against production** — that would leave test accounts and junk
+items in the real database. `ALLOW_PROD=1` overrides the guard if you ever need it.
+
+### Data safety
+
+`npm run deploy` uploads the Worker and assets only; it never touches D1 data.
+Schema changes are always a separate, explicit `wrangler d1 migrations apply`.
+Redeploying as often as you like is safe.
 
 ### Deploy
 

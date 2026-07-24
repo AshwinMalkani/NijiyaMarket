@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type User } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { ErrorNote, inputClass } from "./ui";
 
 type Person = User & { joined?: number };
+
+/** Adds whoever is half-typed into the "someone new" fields. Returns their id. */
+export type FlushInvite = () => Promise<number | null>;
 
 /**
  * Tagging someone doesn't score the item for them — it nudges them to rate it
@@ -13,9 +16,11 @@ type Person = User & { joined?: number };
 export function CompanionPicker({
   value,
   onChange,
+  registerFlush,
 }: {
   value: number[];
   onChange: (ids: number[]) => void;
+  registerFlush?: (flush: FlushInvite) => void;
 }) {
   const { user } = useAuth();
   const [people, setPeople] = useState<Person[]>([]);
@@ -36,25 +41,37 @@ export function CompanionPicker({
     onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
   }
 
-  async function invite(e: React.FormEvent) {
-    e.preventDefault();
+  async function invite(): Promise<number | null> {
+    if (!name.trim() || !phone.trim()) return null;
     setBusy(true);
     setError("");
     try {
       const res = await api.invite(name, phone);
       setPeople((prev) =>
-        prev.some((p) => p.id === res.user.id) ? prev : [...prev, res.user].sort((a, b) => a.name.localeCompare(b.name)),
+        prev.some((p) => p.id === res.user.id)
+          ? prev
+          : [...prev, res.user].sort((a, b) => a.name.localeCompare(b.name)),
       );
       if (!value.includes(res.user.id)) onChange([...value, res.user.id]);
       setName("");
       setPhone("");
       setAdding(false);
+      return res.user.id;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't add them");
+      throw err;
     } finally {
       setBusy(false);
     }
   }
+
+  // Let the parent add a half-typed person on save, so filling the fields and
+  // hitting "Save rating" without pressing "Add them" doesn't drop them.
+  const inviteRef = useRef(invite);
+  inviteRef.current = invite;
+  useEffect(() => {
+    registerFlush?.(() => inviteRef.current());
+  }, [registerFlush]);
 
   return (
     <div>
@@ -95,8 +112,13 @@ export function CompanionPicker({
         )}
       </div>
 
+      {/*
+        Deliberately not a <form>: this renders inside the rating page's form,
+        and a nested form lets the submit event escape to the outer one — which
+        silently navigated away instead of adding the person.
+      */}
       {adding && (
-        <form onSubmit={invite} className="mt-3 space-y-2 rounded-xl bg-white p-3 ring-1 ring-[var(--color-line)]">
+        <div className="mt-3 space-y-2 rounded-xl bg-white p-3 ring-1 ring-[var(--color-line)]">
           <p className="text-xs text-[var(--color-muted)]">
             They don't need an account yet — when they sign up with this number, everything
             you've tagged them in will be waiting.
@@ -115,11 +137,18 @@ export function CompanionPicker({
             placeholder="Their phone number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                invite().catch(() => {});
+              }
+            }}
           />
           {error && <ErrorNote>{error}</ErrorNote>}
           <div className="flex gap-2">
             <button
-              type="submit"
+              type="button"
+              onClick={() => invite().catch(() => {})}
               disabled={busy || !name.trim() || !phone.trim()}
               className="min-h-[44px] flex-1 rounded-xl bg-[var(--color-brand)] font-semibold text-white disabled:opacity-50"
             >
@@ -129,6 +158,8 @@ export function CompanionPicker({
               type="button"
               onClick={() => {
                 setAdding(false);
+                setName("");
+                setPhone("");
                 setError("");
               }}
               className="min-h-[44px] rounded-xl border border-[var(--color-line)] px-4 text-sm text-[var(--color-muted)]"
@@ -136,7 +167,7 @@ export function CompanionPicker({
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       )}
     </div>
   );
