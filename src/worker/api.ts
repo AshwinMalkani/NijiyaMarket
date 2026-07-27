@@ -264,6 +264,26 @@ api.post("/items", async (c) => {
   return c.json({ id: item?.id, existed: false }, 201);
 });
 
+/** Move an item to a different section. Anyone signed in can fix a miscategorization. */
+api.patch("/items/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!Number.isInteger(id)) return c.json(badRequest("Bad item id"), 400);
+
+  const item = await c.env.DB.prepare("SELECT id FROM items WHERE id = ?").bind(id).first();
+  if (!item) return c.json(badRequest("No such item"), 404);
+
+  const body = await c.req.json<{ sectionId?: number }>();
+  const sectionId = Number(body.sectionId);
+  if (!Number.isInteger(sectionId)) return c.json(badRequest("Pick a section"), 400);
+  const section = await c.env.DB.prepare("SELECT id FROM sections WHERE id = ?")
+    .bind(sectionId)
+    .first();
+  if (!section) return c.json(badRequest("Pick a section"), 400);
+
+  await c.env.DB.prepare("UPDATE items SET section_id = ? WHERE id = ?").bind(sectionId, id).run();
+  return c.json({ ok: true });
+});
+
 api.get("/items/:id", async (c) => {
   const user = c.get("user");
   const id = Number(c.req.param("id"));

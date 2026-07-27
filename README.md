@@ -19,6 +19,8 @@ decisions made while building it.
   login screen greets them with who's been tagging them.
 - **Browse the rankings** by section, ranked by our average score, with medal colors for the top
   three and a search box.
+- **Fix a category** any time by tapping the section line on an item's page — handy when a scan
+  guesses wrong.
 - **Share any item** with the button on its page — the native share sheet on a phone, copy-link
   everywhere else. The link deep-links straight to that item; a signed-out friend hits login first
   and lands on the item afterward.

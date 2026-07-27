@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { api, photoUrl, type ItemDetail } from "../lib/api";
+import { api, photoUrl, type ItemDetail, type Section } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useRouter } from "../lib/router";
 import {
   BackHeader,
   Button,
+  Chip,
   Lightbox,
   RowSkeleton,
   ScoreBadge,
@@ -58,6 +59,84 @@ function ShareButton({ itemName }: { itemName: string }) {
         </svg>
       )}
     </button>
+  );
+}
+
+/** The section line, tappable to move the item to a different category. */
+function SectionEditor({
+  item,
+  onChanged,
+}: {
+  item: ItemDetail["item"];
+  onChanged: (section: Section) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (editing && sections.length === 0) {
+      api.sections().then((r) => setSections(r.sections)).catch(() => {});
+    }
+  }, [editing, sections.length]);
+
+  async function pick(section: Section) {
+    if (section.id !== item.section_id) {
+      setBusy(true);
+      try {
+        await api.updateItemSection(item.id, section.id);
+        onChanged(section);
+      } catch {
+        setBusy(false);
+        return;
+      }
+      setBusy(false);
+    }
+    setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => setEditing(true)}
+        className="mt-1 inline-flex items-center gap-1 text-sm text-[var(--color-muted)] active:opacity-60"
+      >
+        {item.section_emoji} {item.section_name}
+        {item.price_cents !== null && <> · ${(item.price_cents / 100).toFixed(2)}</>}
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-label="Edit section">
+          <path
+            d="M4 20h4L18.5 9.5a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0L4 16v4z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-1.5">
+      <div className="flex flex-wrap gap-1.5">
+        {sections.map((s) => (
+          <Chip
+            key={s.id}
+            selected={s.id === item.section_id}
+            disabled={busy}
+            onClick={() => pick(s)}
+            className="min-h-[34px] px-3 text-[13px]"
+          >
+            {s.emoji} {s.name}
+          </Chip>
+        ))}
+      </div>
+      <button
+        onClick={() => setEditing(false)}
+        className="mt-1.5 text-xs text-[var(--color-muted)] underline"
+      >
+        Cancel
+      </button>
+    </div>
   );
 }
 
@@ -121,10 +200,25 @@ export function Item({ itemId }: { itemId: number }) {
         <div className={`flex items-start gap-3 ${hero ? "mt-4" : ""}`}>
           <div className="min-w-0 flex-1">
             <h1 className="text-[22px] leading-7 font-extrabold tracking-tight">{item.name}</h1>
-            <p className="mt-1 text-sm text-[var(--color-muted)]">
-              {item.section_emoji} {item.section_name}
-              {item.price_cents !== null && <> · ${(item.price_cents / 100).toFixed(2)}</>}
-            </p>
+            <SectionEditor
+              item={item}
+              onChanged={(section) =>
+                setDetail((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        item: {
+                          ...prev.item,
+                          section_id: section.id,
+                          section_slug: section.slug,
+                          section_name: section.name,
+                          section_emoji: section.emoji,
+                        },
+                      }
+                    : prev,
+                )
+              }
+            />
             <p className="mt-1 text-xs text-[var(--color-muted)]">
               {item.rating_count === 0
                 ? "Nobody's rated this yet"

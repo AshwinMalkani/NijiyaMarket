@@ -159,6 +159,11 @@ export const api = {
       suggestion: { name: string; brand: string | null; imageUrl: string | null; source: string } | null;
     }>(`/barcode/${encodeURIComponent(code)}`),
   item: (id: number) => request<ItemDetail>(`/items/${id}`),
+  updateItemSection: (id: number, sectionId: number) =>
+    request<{ ok: true }>(`/items/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ sectionId }),
+    }),
 
   saveRating: (
     itemId: number,
